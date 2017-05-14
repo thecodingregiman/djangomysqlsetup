@@ -1,0 +1,152 @@
+By: DaCodingRegimen 
+Date: 5/13/2017
+This is to install the following 
+Django 1.10
+MySQL 5.7.18
+And Setting both up to work together on Ubuntu 16.04.2
+
+Prerequites
+
+-Pip installed (if needed just open terminal and type the following commands
+                sudo apt install python-pip  
+                pip install --upgrade pip
+)
+- Python Installed (Comes with Ubuntu athough not likely to be the latest version)
+- Understanding of how to navigate the terminal
+
+Creating a Virtual Environment with virtualenv
+
+    1. Install virtualenv running the following
+       sudo pip install virtualenv
+
+    2. Create a directory and move to that directory using the following commands 
+       mkdir ~/myproject
+       cd ~/myproject
+ 
+    3. Install a local copy of Python and pip into a directory called mydjangoenv within the folder you just created by running command below
+       virtualenv --python=python3 mydjangoenv
+
+    4. To activate your new environment run the following command
+       source mydjangoenv/bin/activate
+
+    5. Optionally a symbolic link can be created to shorten the command above. It will be used often. Here is the command
+       ln -s  mydjangoenv/bin/activate vd
+a
+Installing Django
+
+    1. Run Command 
+       pip install django==1.10
+
+Installing and Setting up Mysql
+
+    1. Run Command and follow prompts: enter root password
+       sudo apt-get install mysql-server libmysqlclient-dev mysql-connector==2.1.4
+   
+    2. Optionally run through secure prompts by running command below
+       sudo mysql_secure_installation
+
+    3. Invoke mysql prompt and log on as root by running command below
+       mysql -u root -p
+
+    4. Create a database for Django to use by running command below
+       CREATE DATABASE myproject CHARACTER SET UTF8;
+
+    5. Create a user to access the database and set password by running command below
+       CREATE USER myprojectuser@localhost IDENTIFIED BY 'password';
+
+    6. Give the user that was just create access to the database myproject by running command below
+       GRANT ALL PRIVILEGES ON myproject.* TO myprojectuser@localhost;
+
+    7. Next command is needed to allow the changes to be available after mysql prompt is exited
+       FLUSH PRIVILEGES;
+
+    8. exit mysql by running command below
+       exit
+
+
+Create a Django Project and Edit Database settings
+
+    1. Run Command
+       django-admin.py startproject myproject .
+
+    2. Run Command
+       cd myproject
+        
+    3. Use your favorite editor and change the current database settings in the settings.py file to the following
+	DATABASES = {
+	    'default': {
+		'ENGINE': 'mysql.connector.django',
+		'NAME': 'myproject',
+		'USER': 'myprojectuser',
+		'PASSWORD': 'password',
+		'HOST': 'localhost',
+		'PORT': '',
+	    }
+	}
+    4. Change USE_TZ value in the settings.py to False, See below
+       USE_TZ = False
+
+    5. Change into the following directory: /home/dev/Documents/DjangoProjects/mydjangoenv/lib/python3.5/site-packages/mysql/connector/django/
+cd /home/dev/Documents/DjangoProjects/mydjangoenv/lib/python3.5/site-packages/mysql/connector/django/
+
+    6. open operations.py using your favorite editor and replace bulk_insert_sql with the new method below
+	def bulk_insert_sql(self, fields, placeholder_rows):
+	    """
+	    Format the SQL for bulk insert
+	    """
+	    placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
+	    values_sql = ", ".join("(%s)" % sql for sql in placeholder_rows_sql)
+	    return "VALUES " + values_sql
+
+     7. If copying from above confirm spacing is not lost after pasting
+
+Connecting Django to new database
+
+     1. change back to ~/myproject directory
+         cd ~/myproject
+
+     2. move up one directory to where manage.py is located
+         cd ..
+
+     3. Run the following commands to create basic tables Django comes with by default
+         python manage.py makemigrations
+         python manage.py migrate
+     NOTE: if you are getting errors at this point you need may need to go back to mysql prompt drop the database(DROP DATABASE myproject) created and recreate it using CREATE DATABASE myproject CHARACTER SET UTF8; once the error is address
+
+     4. Output from the above commands should be similar to the following:
+        Operations to perform:
+		  Apply all migrations: admin, auth, contenttypes, sessions
+		Running migrations:
+		  Rendering model states... DONE
+		  Applying contenttypes.0001_initial... OK
+		  Applying auth.0001_initial... OK
+		  Applying admin.0001_initial... OK
+		  Applying admin.0002_logentry_remove_auto_add... OK
+		  Applying contenttypes.0002_remove_content_type_name... OK
+		  Applying auth.0002_alter_permission_name_max_length... OK
+		  Applying auth.0003_alter_user_email_max_length... OK
+		  Applying auth.0004_alter_user_username_opts... OK
+		  Applying auth.0005_alter_user_last_login_null... OK
+		  Applying auth.0006_require_contenttypes_0002... OK
+		  Applying auth.0007_alter_validators_add_error_messages... OK
+		  Applying auth.0008_alter_user_username_max_length... OK
+		  Applying sessions.0001_initial... OK
+
+    5. Create a superuser to access Django's Administration site that comes with every Django Project, Run Command below 
+           python manage.py createsuperuser
+    
+    6. Start Django's development server by running the command below
+           python manage.py runserver 0.0.0.0:8000
+
+    7. Go to a broswer and paste in http://0.0.0.0:8000/
+       The following message should be displayed
+       It worked!
+       Congratulations on your first Django-powered page.
+ 
+It is more setup to use a fully featured database like MySQL. But MySQL is awesome and it's well worth it. I would even recommend installing workbench which gives you a Front-end GUI to run queries and see all the tables Django use. 
+
+Send any Feedback to DaCodingRegimen@gmail.com
+
+Happy Coding :-)
+
+
