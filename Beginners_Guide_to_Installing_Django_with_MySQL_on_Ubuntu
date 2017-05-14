@@ -31,7 +31,7 @@ Creating a Virtual Environment with virtualenv
 
     5. Optionally a symbolic link can be created to shorten the command above. It will be used often. Here is the command
        ln -s  mydjangoenv/bin/activate vd
-a
+
 Installing Django
 
     1. Run Command 
